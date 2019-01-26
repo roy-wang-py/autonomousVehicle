@@ -22,10 +22,11 @@ class TLPublisher(object):
         lights.header = light.header
         lights.lights = [light]
         self.lights = lights
-        self.loop()
+        #self.loop()
+        rospy.spin()
 
     def loop(self):
-        rate = rospy.Rate(50)
+        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             self.traffic_light_pubs.publish(self.lights)
             rate.sleep()

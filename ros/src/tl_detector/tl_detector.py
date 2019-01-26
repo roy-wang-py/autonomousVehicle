@@ -14,6 +14,7 @@ from scipy.spatial import KDTree
 
 STATE_COUNT_THRESHOLD = 3
 
+
 class TLDetector(object):
     def __init__(self):
         rospy.init_node('tl_detector')
@@ -51,7 +52,18 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        self.img_count = 0
 
+        #for data collect
+        self.data_collect = False
+        self.red_light_num = 0
+        self.green_light_num = 0
+        self.yellow_light_num = 0
+        self.none_light_num = 0
+        
+        #for debug :image open
+        self.camera_open = True
+        
         rospy.spin()
 
     def pose_cb(self, msg):
@@ -66,27 +78,31 @@ class TLDetector(object):
         of times till we start using it. Otherwise the previous stable state is
         used.
         '''
-        if self.state != state:
-            self.state_count = 0
-            self.state = state
-        elif self.state_count >= STATE_COUNT_THRESHOLD:
-            self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
-            self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
-        else:
-            self.upcoming_red_light_pub.publish(Int32(self.last_wp))
-        self.state_count += 1
+        #rospy.logwarn("tl_detector pose_cb update {} -- {}".format(light_wp, state))
+        if self.camera_open == False:
+            if self.state != state:
+                self.state_count = 0
+                self.state = state
+            elif self.state_count >= STATE_COUNT_THRESHOLD:
+                self.last_state = self.state
+                light_wp = light_wp if state == TrafficLight.RED else -1
+                self.last_wp = light_wp
+                self.upcoming_red_light_pub.publish(Int32(light_wp))
+            else:
+                self.upcoming_red_light_pub.publish(Int32(self.last_wp))
+            self.state_count += 1
 
     def waypoints_cb(self, waypoints):
+
         self.waypoints = waypoints
         #self.base_waypoints = waypoints
-        
+        #rospy.logwarn("tl_detector waypoints_cb 1 ")
         if not self.waypoints_2d:
             self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]
             self.waypoint_tree = KDTree(self.waypoints_2d)
 
     def traffic_cb(self, msg):
+        #rospy.logwarn("tl_detector traffic_cb update ")
         self.lights = msg.lights
 
     def image_cb(self, msg):
@@ -97,6 +113,11 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        self.img_count = self.img_count+1
+        #predicted every 5 images
+        if (self.img_count-1) %5 != 0 :
+            return
+        #rospy.logwarn("tl_detector image_cb 1 ")
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
@@ -118,6 +139,26 @@ class TLDetector(object):
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
+        
+        if self.data_collect == True:
+            #save img
+            self.img_count = self.img_count+1
+            if self.img_count % 5 == 0:
+                cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+                filename = "../../../detector/imgs/sim_imgs/"
+                if state == TrafficLight.RED :
+                    self.red_light_num = self.red_light_num+1
+                    cv2.imwrite(filename+"red/red_"+str(self.red_light_num)+".jpg", cv_image)
+                elif state == TrafficLight.GREEN :
+                    self.green_light_num = self.green_light_num+1
+                    cv2.imwrite(filename+"green/green_"+str(self.green_light_num)+".jpg", cv_image)
+                elif state == TrafficLight.YELLOW :
+                    self.yellow_light_num = self.yellow_light_num+1
+                    cv2.imwrite(filename+"yellow/yellow_"+str(self.yellow_light_num)+".jpg", cv_image)
+                else:
+                    self.none_light_num = self.none_light_num+1
+                    cv2.imwrite(filename+"none/none_"+str(self.none_light_num)+".jpg", cv_image)
+                
 
     def get_closest_waypoint(self, x, y):
         """Identifies the closest path waypoint to the given position
