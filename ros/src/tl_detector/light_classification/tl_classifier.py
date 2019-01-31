@@ -40,21 +40,24 @@ class TLClassifier(object):
         # prediction key
         classification_tl_key = {0: TrafficLight.RED, 1: TrafficLight.YELLOW, 2: TrafficLight.GREEN,
                                  3: TrafficLight.UNKNOWN}
+        #new_img = cv2.imwrite("temp.jpg",image)
+        #image = cv2.imread("temp.jpg")
 
-        # = cv2.resize(image, (128, 256), interpolation=cv2.INTER_AREA)
-        resized = cv2.resize(image, (160, 320), interpolation=cv2.INTER_AREA)
-        test_img = np.asarray(resized)
+        resized = cv2.resize(image, (128, 256), interpolation=cv2.INTER_AREA)
+        #resized = cv2.resize(image, (160, 320), interpolation=cv2.INTER_AREA)
+        test_img = np.asarray(resized, dtype=np.float32)
         
         with self.graph.as_default():
             pre_result = self.model.predict_classes(test_img[None,:,:,:])
 
-        if pre_result == "0":
+        print(pre_result)    
+        if pre_result == 0:
             self.light_state = TrafficLight.RED
-        if pre_result == "1":
+        if pre_result == 1:
             self.light_state = TrafficLight.YELLOW
-        if pre_result == "2":
+        if pre_result == 2:
             self.light_state = TrafficLight.GREEN
-        if pre_result == "3":
+        if pre_result == 3:
             self.light_state = TrafficLight.UNKNOWN
 
         return self.light_state

@@ -123,7 +123,7 @@ class TLDetector(object):
         """
         self.img_count = self.img_count+1
         #predicted every 5 images
-        if (self.img_count-1) %1 != 0 :
+        if (self.img_count-1) %4 != 0 :
             return
         self.has_image = True
         self.camera_image = msg
@@ -212,7 +212,7 @@ class TLDetector(object):
         #Get classification
         light_state = self.light_classifier.get_classification(cv_image)
         if light_state  != light.state:
-            rospy.logwarn("get_light_state==> classfier state{} -- real state{}".format(light_state , light.state))
+            rospy.logwarn("get_light_state==> classfier state {} -- real state {}".format(light_state , light.state))
         
         return light_state
 
