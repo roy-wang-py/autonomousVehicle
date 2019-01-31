@@ -43,8 +43,8 @@ class TLClassifier(object):
         #new_img = cv2.imwrite("temp.jpg",image)
         #image = cv2.imread("temp.jpg")
 
-        resized = cv2.resize(image, (128, 256), interpolation=cv2.INTER_AREA)
-        #resized = cv2.resize(image, (160, 320), interpolation=cv2.INTER_AREA)
+        #resized = cv2.resize(image, (128, 256), interpolation=cv2.INTER_AREA)
+        resized = cv2.resize(image, (160, 320), interpolation=cv2.INTER_AREA)
         test_img = np.asarray(resized, dtype=np.float32)
         
         with self.graph.as_default():
