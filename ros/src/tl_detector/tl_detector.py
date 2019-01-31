@@ -41,7 +41,7 @@ class TLDetector(object):
         self.none_light_num = 0
         
         #for debug :image open
-        self.camera_open = True   
+        self.camera_open = False   
    
         self.bridge = CvBridge()
         self.light_classifier = TLClassifier()
@@ -87,7 +87,7 @@ class TLDetector(object):
         #rospy.logwarn("tl_detector pose_cb update {} -- {}".format(light_wp, state))
         if self.camera_open == False:
             light_wp, state = self.process_traffic_lights()
-            rospy.logwarn("tl_detector pose_cb 1 ")
+            #rospy.logwarn("tl_detector pose_cb 1 ")
             if self.state != state:
                 self.state_count = 0
                 self.state = state
@@ -199,8 +199,8 @@ class TLDetector(object):
 
         """
         #for testing
-        #if self.data_collect == True:
-            #return light.state
+        if self.camera_open == False:
+            return light.state
             #return TrafficLight.GREEN
         
         if(not self.has_image):
