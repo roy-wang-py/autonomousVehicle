@@ -62,6 +62,8 @@ roslaunch launch/styx.launch
 ```
 4. Run the simulator
 
+5.Mod ros/src/tl_detector/tl_detector.py:Line 44.Set camera_open to True, the vehicle will run based on camera.
+
 ### Real world testing
 1. Download [training bag](https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/traffic_light_bag_file.zip) that was recorded on the Udacity self-driving car.
 2. Unzip the file
